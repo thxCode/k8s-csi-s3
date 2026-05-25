@@ -29,14 +29,15 @@ func init() {
 }
 
 var (
-	endpoint = flag.String("endpoint", "unix://tmp/csi.sock", "CSI endpoint")
-	nodeID   = flag.String("nodeid", "", "node id")
+	endpoint   = flag.String("endpoint", "unix://tmp/csi.sock", "CSI endpoint")
+	nodeID     = flag.String("nodeid", "", "node id")
+	driverName = flag.String("drivername", "ru.yandex.s3.csi", "name of the driver")
 )
 
 func main() {
 	flag.Parse()
 
-	driver, err := driver.New(*nodeID, *endpoint)
+	driver, err := driver.New(*nodeID, *endpoint, *driverName)
 	if err != nil {
 		log.Fatal(err)
 	}

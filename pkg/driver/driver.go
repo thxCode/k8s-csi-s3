@@ -46,9 +46,9 @@ var (
 )
 
 // New initializes the driver
-func New(nodeID string, endpoint string) (*driver, error) {
+func New(nodeID string, endpoint string, name string) (*driver, error) {
 	d := &driver{
-		name:     driverName,
+		name:     name,
 		version:  vendorVersion,
 		nodeID:   nodeID,
 		endpoint: endpoint,

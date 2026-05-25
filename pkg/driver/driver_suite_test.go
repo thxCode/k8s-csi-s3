@@ -27,7 +27,8 @@ var _ = Describe("S3Driver", func() {
 		if err := os.Remove(socket); err != nil && !os.IsNotExist(err) {
 			Expect(err).NotTo(HaveOccurred())
 		}
-		driver, err := driver.New("test-node", csiEndpoint)
+		driverName := "ru.yandex.s3.csi"
+		driver, err := driver.New("test-node", csiEndpoint, driverName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -54,7 +55,8 @@ var _ = Describe("S3Driver", func() {
 		if err := os.Remove(socket); err != nil && !os.IsNotExist(err) {
 			Expect(err).NotTo(HaveOccurred())
 		}
-		driver, err := driver.New("test-node", csiEndpoint)
+		driverName := "ru.yandex.s3.csi"
+		driver, err := driver.New("test-node", csiEndpoint, driverName)
 		if err != nil {
 			log.Fatal(err)
 		}
