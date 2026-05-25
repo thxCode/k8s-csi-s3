@@ -34,6 +34,15 @@ import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 )
 
+const (
+	pvcNameKey           = "csi.storage.k8s.io/pvc/name"
+	pvcNamespaceKey      = "csi.storage.k8s.io/pvc/namespace"
+	pvNameKey            = "csi.storage.k8s.io/pv/name"
+	pvcNameMetadata      = "${pvc.metadata.name}"
+	pvcNamespaceMetadata = "${pvc.metadata.namespace}"
+	pvNameMetadata       = "${pv.metadata.name}"
+)
+
 type controllerServer struct {
 	csi.UnimplementedControllerServer
 	driver *driver
@@ -50,6 +59,27 @@ func (cs *controllerServer) CreateVolume(ctx context.Context, req *csi.CreateVol
 	if params[mounter.BucketKey] != "" {
 		bucketName = params[mounter.BucketKey]
 		prefix = volumeID
+		volumeID = path.Join(bucketName, prefix)
+	}
+
+	// check if prefix name is overridden
+	if params[mounter.PrefixKey] != "" {
+		prefix = params[mounter.PrefixKey]
+
+		replaceMap := map[string]string{}
+		for k, v := range params {
+			switch k {
+			case pvcNameKey:
+				replaceMap[pvcNameMetadata] = v
+			case pvcNamespaceKey:
+				replaceMap[pvcNamespaceMetadata] = v
+			case pvNameKey:
+				replaceMap[pvNameMetadata] = v
+			}
+		}
+
+		prefix = replaceWithMap(prefix, replaceMap)
+
 		volumeID = path.Join(bucketName, prefix)
 	}
 
@@ -257,4 +287,14 @@ func volumeIDToBucketPrefix(volumeID string) (string, string) {
 	}
 
 	return volumeID, ""
+}
+
+// replaceWithMap replace key with value for str
+func replaceWithMap(str string, m map[string]string) string {
+	for k, v := range m {
+		if k != "" {
+			str = strings.ReplaceAll(str, k, v)
+		}
+	}
+	return str
 }
