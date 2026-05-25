@@ -1,7 +1,8 @@
+---
 apiVersion: storage.k8s.io/v1
 kind: CSIDriver
 metadata:
-  name: ru.yandex.s3.csi
+  name: {{ .Values.driver.name }}
 spec:
   attachRequired: false
   podInfoOnMount: true

@@ -1,0 +1,73 @@
+name: charts
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: { }
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  pack:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Publish
+        uses: stefanprodan/helm-gh-pages@master
+        with:
+          # GitHub automatically creates a GITHUB_TOKEN secret to use in your workflow. You can use the GITHUB_TOKEN to authenticate in a workflow run.
+          # See https://docs.github.com/en/actions/reference/authentication-in-a-workflow#about-the-github_token-secret
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: github-pages
+          charts_dir: deploy/helm
+          target_dir: charts
+          linting: off
+
+  build:
+    runs-on: ubuntu-24.04
+    needs:
+      - pack
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: github-pages
+          lfs: true
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+      - name: Build
+        uses: actions/jekyll-build-pages@v1
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    runs-on: ubuntu-24.04
+    needs:
+      - build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

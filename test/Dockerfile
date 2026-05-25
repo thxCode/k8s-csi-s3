@@ -1,6 +1,10 @@
 FROM golang:1.25.9
 
-LABEL maintainers="Vitaliy Filippov <vitalif@yourcmc.ru>"
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+LABEL maintainers="Frank Mai <thxcode0824@gmail.com>"
 LABEL description="csi-s3 testing image"
 
 # Minio download servers are TERRIBLY SLOW as of 2021-10-27
@@ -18,7 +22,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 
-RUN wget https://github.com/yandex-cloud/geesefs/releases/latest/download/geesefs-linux-amd64 \
+RUN wget https://github.com/yandex-cloud/geesefs/releases/latest/download/geesefs-${TARGETOS}-${TARGETARCH} \
     -O /usr/bin/geesefs && chmod 755 /usr/bin/geesefs
 
 ENTRYPOINT ["/build/test/test.sh"]
